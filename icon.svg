@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="110" fill="#4a7c59"/>
+  <!-- Donut (resum) -->
+  <circle cx="256" cy="244" r="120" fill="none" stroke="#ffffff" stroke-width="58" stroke-dasharray="471 283" stroke-dashoffset="118" transform="rotate(-90 256 244)"/>
+  <circle cx="256" cy="244" r="120" fill="none" stroke="#b7e4c7" stroke-width="58" stroke-dasharray="283 471" stroke-dashoffset="-353" transform="rotate(-90 256 244)"/>
+  <!-- Bars -->
+  <rect x="150" y="408" width="40" height="48" rx="5" fill="#ffffff"/>
+  <rect x="210" y="392" width="40" height="64" rx="5" fill="#ffffff"/>
+  <rect x="270" y="416" width="40" height="40" rx="5" fill="#ffffff"/>
+  <rect x="330" y="380" width="40" height="76" rx="5" fill="#ffffff"/>
+</svg>

@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Novalia Forestal · Resum Mensual</title>
+<meta name="theme-color" content="#4a7c59">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Resum Novalia">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon.svg">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #f5f5f0;
+    color: #1a1a1a;
+    padding: 20px;
+    min-height: 100vh;
+  }
+
+  /* ── Header ── */
+  .header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+  .header h1 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #1a1a1a;
+  }
+  .header h1 span { color: #4a7c59; }
+
+  /* ── Month selector ── */
+  .month-tabs {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+  .month-tab {
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid #d0d0c8;
+    background: #fff;
+    cursor: pointer;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: #555;
+    transition: all .15s;
+  }
+  .month-tab:hover { border-color: #4a7c59; color: #4a7c59; }
+  .month-tab.active { background: #4a7c59; border-color: #4a7c59; color: #fff; }
+
+  /* ── KPI row ── */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .kpi-card {
+    background: #fff;
+    border-radius: 10px;
+    padding: 16px;
+    border: 1px solid #e8e8e0;
+  }
+  .kpi-label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: #888;
+    margin-bottom: 6px;
+  }
+  .kpi-value {
+    font-size: 1.7rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    line-height: 1;
+  }
+  .kpi-unit {
+    font-size: 0.8rem;
+    color: #888;
+    margin-top: 4px;
+  }
+
+  /* ── Charts section ── */
+  .charts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .chart-card {
+    background: #fff;
+    border-radius: 10px;
+    padding: 20px;
+    border: 1px solid #e8e8e0;
+  }
+  .chart-card h3 {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: #888;
+    margin-bottom: 16px;
+  }
+  .chart-wrap {
+    position: relative;
+    height: 220px;
+  }
+
+  /* ── Table section ── */
+  .tables-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 16px;
+  }
+  .table-card {
+    background: #fff;
+    border-radius: 10px;
+    padding: 20px;
+    border: 1px solid #e8e8e0;
+  }
+  .table-card h3 {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: #888;
+    margin-bottom: 14px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+  }
+  th {
+    text-align: right;
+    font-weight: 600;
+    color: #555;
+    padding: 5px 8px;
+    border-bottom: 1px solid #e8e8e0;
+    font-size: 0.75rem;
+  }
+  th:first-child { text-align: left; }
+  td {
+    padding: 7px 8px;
+    text-align: right;
+    border-bottom: 1px solid #f0f0e8;
+    color: #333;
+  }
+  td:first-child { text-align: left; font-weight: 500; }
+  tr:last-child td {
+    font-weight: 700;
+    color: #1a1a1a;
+    border-bottom: none;
+    border-top: 1px solid #d0d0c8;
+  }
+  .pct { color: #888; font-size: 0.8rem; }
+
+  /* ── Bar within table ── */
+  .bar-cell { position: relative; padding-right: 0 !important; }
+  .bar-bg { background: #f0f5f2; border-radius: 3px; height: 6px; overflow: hidden; }
+  .bar-fill { background: #4a7c59; border-radius: 3px; height: 100%; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Novalia Forestal · <span>Resum Mensual</span></h1>
+</div>
+
+<div class="month-tabs" id="monthTabs"></div>
+<div id="content"></div>
+
+<script>
+// ── Data store ──────────────────────────────────────────────────────────────
+const DATA = {
+  "Juny 2026": {
+    kpis: {
+      tones: 2840.45,
+      viatges: 114,
+      mitja: 24.92,
+      proveidors: 9,
+      clients: 9
+    },
+    proveidors: [
+      { nom: "BOSCAT FUSTA",            tones: 1074.42, viatges: 42 },
+      { nom: "PRESEGUÉ",                tones:  642.14, viatges: 25 },
+      { nom: "EXFOCAT",                 tones:  311.71, viatges: 12 },
+      { nom: "NOVALIA FORESTAL",        tones:  222.50, viatges: 10 },
+      { nom: "AGROPECUARIA MONTSERRAT", tones:  201.96, viatges: 7  },
+      { nom: "BAUTISTA",                tones:  200.78, viatges: 11 },
+      { nom: "ZARACHO FORESTAL",        tones:  110.32, viatges: 4  },
+      { nom: "AMISOL",                  tones:   51.02, viatges: 2  },
+      { nom: "SERFOCAT",                tones:   25.60, viatges: 1  },
+    ],
+    clients: [
+      { nom: "NUFRI",           tones: 1179.99, viatges: 45 },
+      { nom: "TSB",             tones:  625.98, viatges: 25 },
+      { nom: "ROFEICA",         tones:  373.10, viatges: 17 },
+      { nom: "SPT",             tones:  286.30, viatges: 11 },
+      { nom: "CROMOGENIA",      tones:  134.78, viatges: 6  },
+      { nom: "PATI BOSCAT",     tones:  111.88, viatges: 4  },
+      { nom: "PATI ALAMÚS",     tones:   67.76, viatges: 3  },
+      { nom: "LIPSA",           tones:   48.66, viatges: 2  },
+      { nom: "Casa propietari", tones:   12.00, viatges: 1  },
+    ],
+    transportistes: [
+      { nom: "ROJAS",        tones: 1039.72 },
+      { nom: "EXLAND",       tones:  778.54 },
+      { nom: "VILAPRAT",     tones:  535.79 },
+      { nom: "PUIGGENÉ",     tones:  457.66 },
+      { nom: "FRAN SÁNCHEZ", tones:   16.74 },
+      { nom: "BAUTISTA",     tones:   12.00 },
+    ],
+    estelladores: [
+      { nom: "NOVALIA",       tones: 1733.01 },
+      { nom: "ROJAS",         tones:  890.24 },
+      { nom: "SENSE DADES",   tones:  200.46 },
+      { nom: "TRONC SÁNCHEZ", tones:   16.74 },
+    ]
+  },
+  "Maig 2026": {
+    kpis: {
+      tones: 4127.26,
+      viatges: 159,
+      mitja: 25.96,
+      proveidors: 8,
+      clients: 8
+    },
+    proveidors: [
+      { nom: "BOSCAT FUSTA",      tones: 1158.72, viatges: 45 },
+      { nom: "EXFOCAT",           tones: 837.94,  viatges: 32 },
+      { nom: "BAUTISTA",          tones: 811.91,  viatges: 30 },
+      { nom: "PRESEGUÉ",          tones: 679.59,  viatges: 25 },
+      { nom: "GRIGORE AFETELOR",  tones: 363.66,  viatges: 15 },
+      { nom: "NOVALIA FORESTAL",  tones: 207.24,  viatges: 9  },
+      { nom: "AMISOL",            tones:  48.06,  viatges: 2  },
+      { nom: "FUSTES BORNIQUEL",  tones:  20.14,  viatges: 1  },
+    ],
+    clients: [
+      { nom: "NUFRI",       tones: 1310.72, viatges: 50 },
+      { nom: "ROFEICA",     tones: 994.48,  viatges: 38 },
+      { nom: "TSB",         tones: 623.06,  viatges: 24 },
+      { nom: "SPT",         tones: 353.83,  viatges: 13 },
+      { nom: "LIPSA",       tones: 318.63,  viatges: 12 },
+      { nom: "CROMOGENIA",  tones: 187.98,  viatges: 8  },
+      { nom: "PATI ALAMÚS", tones: 181.08,  viatges: 8  },
+      { nom: "PATI BOSCAT", tones: 157.48,  viatges: 6  },
+    ],
+    transportistes: [
+      { nom: "VILAPRAT",        tones: 1538.95 },
+      { nom: "ROJAS",           tones: 1053.62 },
+      { nom: "PUIGGENÉ",        tones:  553.36 },
+      { nom: "PORQUERES",       tones:  420.26 },
+      { nom: "NUFRI (transp.)", tones:  265.83 },
+      { nom: "EXLAND",          tones:  244.44 },
+      { nom: "FRAN SÁNCHEZ",    tones:   50.80 },
+    ],
+    estelladores: [
+      { nom: "NOVALIA",     tones: 2572.57 },
+      { nom: "ROJAS",       tones:  893.72 },
+      { nom: "NUFRI",       tones:  294.05 },
+      { nom: "AGROMET",     tones:  156.22 },
+      { nom: "SENSE DADES", tones:  210.70 },
+    ]
+  }
+};
+
+// ── Chart instances ──────────────────────────────────────────────────────────
+let charts = {};
+
+const GREENS = [
+  '#2d6a4f','#40916c','#52b788','#74c69d','#95d5b2','#b7e4c7','#d8f3dc','#1b4332'
+];
+const ORANGES = [
+  '#e76f51','#f4a261','#e9c46a','#264653','#2a9d8f','#a8dadc','#457b9d','#d62828','#c77dff'
+];
+
+function fmt(n, dec=2) {
+  if (n === undefined || n === null) return '—';
+  return n.toLocaleString('ca-ES', { minimumFractionDigits: dec, maximumFractionDigits: dec });
+}
+function pct(part, total) {
+  return ((part / total) * 100).toFixed(1) + '%';
+}
+
+function destroyCharts() {
+  Object.values(charts).forEach(c => c.destroy());
+  charts = {};
+}
+
+function renderMonth(monthKey) {
+  destroyCharts();
+  const d = DATA[monthKey];
+  if (!d) return;
+
+  const totalProv = d.proveidors.reduce((a,x) => a + x.tones, 0);
+  const totalCli  = d.clients.reduce((a,x) => a + x.tones, 0);
+  const totalTr   = d.transportistes.reduce((a,x) => a + x.tones, 0);
+  const totalEst  = d.estelladores.reduce((a,x) => a + x.tones, 0);
+
+  document.getElementById('content').innerHTML = `
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">Tones netes</div>
+        <div class="kpi-value">${fmt(d.kpis.tones, 0)}</div>
+        <div class="kpi-unit">t</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Viatges</div>
+        <div class="kpi-value">${d.kpis.viatges}</div>
+        <div class="kpi-unit">#</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Mitjana/viatge</div>
+        <div class="kpi-value">${fmt(d.kpis.mitja, 1)}</div>
+        <div class="kpi-unit">t/viatge</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Proveïdors actius</div>
+        <div class="kpi-value">${d.kpis.proveidors}</div>
+        <div class="kpi-unit">#</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Clients actius</div>
+        <div class="kpi-value">${d.kpis.clients}</div>
+        <div class="kpi-unit">#</div>
+      </div>
+    </div>
+
+    <div class="charts-grid">
+      <div class="chart-card">
+        <h3>Tones per proveïdor</h3>
+        <div class="chart-wrap"><canvas id="chartProv"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <h3>Tones per client</h3>
+        <div class="chart-wrap"><canvas id="chartCli"></canvas></div>
+      </div>
+    </div>
+
+    <div class="tables-grid">
+      <div class="table-card">
+        <h3>Detall proveïdors</h3>
+        <table>
+          <thead><tr><th>Proveïdor</th><th>Tones</th><th>Viatges</th><th>%</th></tr></thead>
+          <tbody>
+            ${d.proveidors.map(r => `<tr>
+              <td>${r.nom}</td>
+              <td>${fmt(r.tones)}</td>
+              <td>${r.viatges}</td>
+              <td class="pct">${pct(r.tones, totalProv)}</td>
+            </tr>`).join('')}
+            <tr><td>TOTAL</td><td>${fmt(totalProv)}</td><td>${d.proveidors.reduce((a,x)=>a+x.viatges,0)}</td><td></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="table-card">
+        <h3>Detall clients</h3>
+        <table>
+          <thead><tr><th>Client</th><th>Tones</th><th>Viatges</th><th>%</th></tr></thead>
+          <tbody>
+            ${d.clients.map(r => `<tr>
+              <td>${r.nom}</td>
+              <td>${fmt(r.tones)}</td>
+              <td>${r.viatges}</td>
+              <td class="pct">${pct(r.tones, totalCli)}</td>
+            </tr>`).join('')}
+            <tr><td>TOTAL</td><td>${fmt(totalCli)}</td><td>${d.clients.reduce((a,x)=>a+x.viatges,0)}</td><td></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="table-card">
+        <h3>Transportistes</h3>
+        <table>
+          <thead><tr><th>Transportista</th><th>Tones</th><th>%</th></tr></thead>
+          <tbody>
+            ${d.transportistes.map(r => `<tr>
+              <td>${r.nom}</td>
+              <td>${fmt(r.tones)}</td>
+              <td class="pct">${pct(r.tones, totalTr)}</td>
+            </tr>`).join('')}
+            <tr><td>TOTAL</td><td>${fmt(totalTr)}</td><td></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="table-card">
+        <h3>Estelladores</h3>
+        <table>
+          <thead><tr><th>Estelladora</th><th>Tones</th><th>%</th></tr></thead>
+          <tbody>
+            ${d.estelladores.map(r => `<tr>
+              <td>${r.nom}</td>
+              <td>${fmt(r.tones)}</td>
+              <td class="pct">${pct(r.tones, totalEst)}</td>
+            </tr>`).join('')}
+            <tr><td>TOTAL</td><td>${fmt(totalEst)}</td><td></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+
+  // Donut: proveïdors
+  charts.prov = new Chart(document.getElementById('chartProv'), {
+    type: 'doughnut',
+    data: {
+      labels: d.proveidors.map(r => r.nom),
+      datasets: [{ data: d.proveidors.map(r => r.tones), backgroundColor: GREENS, borderWidth: 2, borderColor: '#fff' }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      cutout: '60%',
+      plugins: {
+        legend: { position: 'right', labels: { font: { size: 10 }, boxWidth: 12, padding: 8 } },
+        tooltip: { callbacks: { label: ctx => ` ${fmt(ctx.raw)} t (${pct(ctx.raw, totalProv)})` } }
+      }
+    }
+  });
+
+  // Donut: clients
+  charts.cli = new Chart(document.getElementById('chartCli'), {
+    type: 'doughnut',
+    data: {
+      labels: d.clients.map(r => r.nom),
+      datasets: [{ data: d.clients.map(r => r.tones), backgroundColor: ORANGES, borderWidth: 2, borderColor: '#fff' }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      cutout: '60%',
+      plugins: {
+        legend: { position: 'right', labels: { font: { size: 10 }, boxWidth: 12, padding: 8 } },
+        tooltip: { callbacks: { label: ctx => ` ${fmt(ctx.raw)} t (${pct(ctx.raw, totalCli)})` } }
+      }
+    }
+  });
+}
+
+// ── Month tabs ───────────────────────────────────────────────────────────────
+function buildTabs() {
+  const months = Object.keys(DATA);
+  const container = document.getElementById('monthTabs');
+  container.innerHTML = '';
+  months.forEach((m, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'month-tab' + (i === months.length - 1 ? ' active' : '');
+    btn.textContent = m;
+    btn.onclick = () => {
+      document.querySelectorAll('.month-tab').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderMonth(m);
+    };
+    container.appendChild(btn);
+  });
+}
+
+buildTabs();
+renderMonth(Object.keys(DATA).at(-1));
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+}
+</script>
+</body>
+</html>
