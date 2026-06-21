@@ -185,51 +185,6 @@
 // ── Data store ──────────────────────────────────────────────────────────────
 //__DATA_START__  (reescrit automàticament per actualitza_dashboard.ps1 — no editar a mà)
 const DATA = {
-  "Juny 2026": {
-    kpis: {
-      tones: 2840.45,
-      viatges: 114,
-      mitja: 24.92,
-      proveidors: 9,
-      clients: 9
-    },
-    proveidors: [
-      { nom: "BOSCAT FUSTA",            tones: 1074.42, viatges: 42 },
-      { nom: "PRESEGUÉ",                tones:  642.14, viatges: 25 },
-      { nom: "EXFOCAT",                 tones:  311.71, viatges: 12 },
-      { nom: "NOVALIA FORESTAL",        tones:  222.50, viatges: 10 },
-      { nom: "AGROPECUARIA MONTSERRAT", tones:  201.96, viatges: 7  },
-      { nom: "BAUTISTA",                tones:  200.78, viatges: 11 },
-      { nom: "ZARACHO FORESTAL",        tones:  110.32, viatges: 4  },
-      { nom: "AMISOL",                  tones:   51.02, viatges: 2  },
-      { nom: "SERFOCAT",                tones:   25.60, viatges: 1  },
-    ],
-    clients: [
-      { nom: "NUFRI",           tones: 1179.99, viatges: 45 },
-      { nom: "TSB",             tones:  625.98, viatges: 25 },
-      { nom: "ROFEICA",         tones:  373.10, viatges: 17 },
-      { nom: "SPT",             tones:  286.30, viatges: 11 },
-      { nom: "CROMOGENIA",      tones:  134.78, viatges: 6  },
-      { nom: "PATI BOSCAT",     tones:  111.88, viatges: 4  },
-      { nom: "PATI ALAMÚS",     tones:   67.76, viatges: 3  },
-      { nom: "LIPSA",           tones:   48.66, viatges: 2  },
-      { nom: "Casa propietari", tones:   12.00, viatges: 1  },
-    ],
-    transportistes: [
-      { nom: "ROJAS",        tones: 1039.72 },
-      { nom: "EXLAND",       tones:  778.54 },
-      { nom: "VILAPRAT",     tones:  535.79 },
-      { nom: "PUIGGENÉ",     tones:  457.66 },
-      { nom: "FRAN SÁNCHEZ", tones:   16.74 },
-      { nom: "BAUTISTA",     tones:   12.00 },
-    ],
-    estelladores: [
-      { nom: "NOVALIA",       tones: 1733.01 },
-      { nom: "ROJAS",         tones:  890.24 },
-      { nom: "SENSE DADES",   tones:  200.46 },
-      { nom: "TRONC SÁNCHEZ", tones:   16.74 },
-    ]
-  },
   "Maig 2026": {
     kpis: {
       tones: 4127.26,
@@ -239,40 +194,85 @@ const DATA = {
       clients: 8
     },
     proveidors: [
-      { nom: "BOSCAT FUSTA",      tones: 1158.72, viatges: 45 },
-      { nom: "EXFOCAT",           tones: 837.94,  viatges: 32 },
-      { nom: "BAUTISTA",          tones: 811.91,  viatges: 30 },
-      { nom: "PRESEGUÉ",          tones: 679.59,  viatges: 25 },
-      { nom: "GRIGORE AFETELOR",  tones: 363.66,  viatges: 15 },
-      { nom: "NOVALIA FORESTAL",  tones: 207.24,  viatges: 9  },
-      { nom: "AMISOL",            tones:  48.06,  viatges: 2  },
-      { nom: "FUSTES BORNIQUEL",  tones:  20.14,  viatges: 1  },
+      { nom: "BOSCAT FUSTA", tones: 1158.72, viatges: 45 },
+      { nom: "EXFOCAT", tones: 837.94, viatges: 32 },
+      { nom: "BAUTISTA", tones: 811.91, viatges: 30 },
+      { nom: "PRESEGUÉ", tones: 679.59, viatges: 25 },
+      { nom: "GRIGORE AFETELOR", tones: 363.66, viatges: 15 },
+      { nom: "NOVALIA FORESTAL", tones: 207.24, viatges: 9 },
+      { nom: "AMISOL", tones: 48.06, viatges: 2 },
+      { nom: "FUSTES BORNIQUEL", tones: 20.14, viatges: 1 }
     ],
     clients: [
-      { nom: "NUFRI",       tones: 1310.72, viatges: 50 },
-      { nom: "ROFEICA",     tones: 994.48,  viatges: 38 },
-      { nom: "TSB",         tones: 623.06,  viatges: 24 },
-      { nom: "SPT",         tones: 353.83,  viatges: 13 },
-      { nom: "LIPSA",       tones: 318.63,  viatges: 12 },
-      { nom: "CROMOGENIA",  tones: 187.98,  viatges: 8  },
-      { nom: "PATI ALAMÚS", tones: 181.08,  viatges: 8  },
-      { nom: "PATI BOSCAT", tones: 157.48,  viatges: 6  },
+      { nom: "NUFRI", tones: 1310.72, viatges: 50 },
+      { nom: "ROFEICA", tones: 994.48, viatges: 38 },
+      { nom: "TSB", tones: 623.06, viatges: 24 },
+      { nom: "SPT", tones: 353.83, viatges: 13 },
+      { nom: "LIPSA", tones: 318.63, viatges: 12 },
+      { nom: "CROMOGENIA", tones: 187.98, viatges: 8 },
+      { nom: "PATI ALAMÚS", tones: 181.08, viatges: 8 },
+      { nom: "PATI BOSCAT", tones: 157.48, viatges: 6 }
     ],
     transportistes: [
-      { nom: "VILAPRAT",        tones: 1538.95 },
-      { nom: "ROJAS",           tones: 1053.62 },
-      { nom: "PUIGGENÉ",        tones:  553.36 },
-      { nom: "PORQUERES",       tones:  420.26 },
-      { nom: "NUFRI (transp.)", tones:  265.83 },
-      { nom: "EXLAND",          tones:  244.44 },
-      { nom: "FRAN SÁNCHEZ",    tones:   50.80 },
+      { nom: "VILAPRAT", tones: 1538.95 },
+      { nom: "ROJAS", tones: 1053.62 },
+      { nom: "Puiggené", tones: 553.36 },
+      { nom: "PORQUERES", tones: 420.26 },
+      { nom: "NUFRI", tones: 265.83 },
+      { nom: "EXLAND", tones: 244.44 },
+      { nom: "FRAN SÁNCHEZ", tones: 50.8 }
     ],
     estelladores: [
-      { nom: "NOVALIA",     tones: 2572.57 },
-      { nom: "ROJAS",       tones:  893.72 },
-      { nom: "NUFRI",       tones:  294.05 },
-      { nom: "AGROMET",     tones:  156.22 },
-      { nom: "SENSE DADES", tones:  210.70 },
+      { nom: "NOVALIA", tones: 2572.57 },
+      { nom: "ROJAS", tones: 893.72 },
+      { nom: "NUFRI", tones: 294.05 },
+      { nom: "SENSE DADES", tones: 210.7 },
+      { nom: "AGROMET", tones: 156.22 }
+    ]
+  },
+  "Juny 2026": {
+    kpis: {
+      tones: 2840.45,
+      viatges: 114,
+      mitja: 24.92,
+      proveidors: 9,
+      clients: 9
+    },
+    proveidors: [
+      { nom: "BOSCAT FUSTA", tones: 1074.42, viatges: 42 },
+      { nom: "PRESEGUÉ", tones: 642.14, viatges: 25 },
+      { nom: "EXFOCAT", tones: 311.71, viatges: 12 },
+      { nom: "NOVALIA FORESTAL", tones: 222.5, viatges: 10 },
+      { nom: "AGROPECUARIA MONTSERRAT", tones: 201.96, viatges: 7 },
+      { nom: "BAUTISTA", tones: 200.78, viatges: 11 },
+      { nom: "ZARACHO FORESTAL", tones: 110.32, viatges: 4 },
+      { nom: "AMISOL", tones: 51.02, viatges: 2 },
+      { nom: "SERFOCAT", tones: 25.6, viatges: 1 }
+    ],
+    clients: [
+      { nom: "NUFRI", tones: 1179.99, viatges: 45 },
+      { nom: "TSB", tones: 625.98, viatges: 25 },
+      { nom: "ROFEICA", tones: 373.1, viatges: 17 },
+      { nom: "SPT", tones: 286.3, viatges: 11 },
+      { nom: "CROMOGENIA", tones: 134.78, viatges: 6 },
+      { nom: "PATI BOSCAT", tones: 111.88, viatges: 4 },
+      { nom: "PATI ALAMÚS", tones: 67.76, viatges: 3 },
+      { nom: "LIPSA", tones: 48.66, viatges: 2 },
+      { nom: "Casa propietari", tones: 12, viatges: 1 }
+    ],
+    transportistes: [
+      { nom: "ROJAS", tones: 1039.72 },
+      { nom: "EXLAND", tones: 778.54 },
+      { nom: "VILAPRAT", tones: 535.79 },
+      { nom: "PUIGGENÉ", tones: 457.66 },
+      { nom: "FRAN SÁNCHEZ", tones: 16.74 },
+      { nom: "Bautista", tones: 12 }
+    ],
+    estelladores: [
+      { nom: "NOVALIA", tones: 1733.01 },
+      { nom: "ROJAS", tones: 890.24 },
+      { nom: "SENSE DADES", tones: 200.46 },
+      { nom: "TRONC SÁNCHEZ", tones: 16.74 }
     ]
   }
 };
