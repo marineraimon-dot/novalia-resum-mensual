@@ -60,6 +60,18 @@
   }
   .month-tab:hover { border-color: #4a7c59; color: #4a7c59; }
   .month-tab.active { background: #4a7c59; border-color: #4a7c59; color: #fff; }
+  /* pestanya d'acumulat anual: separada dels mesos i amb més pes visual */
+  .month-tab.is-any {
+    margin-left: 10px;
+    border-color: #4a7c59;
+    color: #2d6a4f;
+    font-weight: 700;
+  }
+  .month-tab.is-any.active { background: #2d6a4f; border-color: #2d6a4f; color: #fff; }
+
+  /* ── Full-width chart (evolució mensual) ── */
+  .chart-card.is-wide { margin-bottom: 16px; }
+  .chart-card.is-wide .chart-wrap { height: 260px; }
 
   /* ── KPI row ── */
   .kpi-grid {
@@ -370,7 +382,7 @@ const DATA = {
     transportistes: [
       { nom: "VILAPRAT", tones: 1538.95 },
       { nom: "ROJAS", tones: 1053.62 },
-      { nom: "Puiggené", tones: 553.36 },
+      { nom: "PUIGGENÉ", tones: 553.36 },
       { nom: "PORQUERES", tones: 420.26 },
       { nom: "NUFRI", tones: 265.83 },
       { nom: "EXLAND", tones: 244.44 },
@@ -441,7 +453,7 @@ const DATA = {
     },
     proveidors: [
       { nom: "PRESEGUÉ", tones: 1009.51, viatges: 41 },
-      { nom: "ZARACHO", tones: 681.32, viatges: 27 },
+      { nom: "ZARACHO FORESTAL", tones: 681.32, viatges: 27 },
       { nom: "BOSCAT FUSTA", tones: 313.26, viatges: 14 },
       { nom: "NOVALIA FORESTAL", tones: 239.14, viatges: 11 },
       { nom: "FUSTES JANÉ", tones: 166.64, viatges: 7 },
@@ -479,15 +491,14 @@ const DATA = {
       tones: 858.62,
       viatges: 35,
       mitja: 24.53,
-      proveidors: 5,
+      proveidors: 4,
       clients: 5
     },
     proveidors: [
+      { nom: "PRESEGUÉ", tones: 291.28, viatges: 12 },
       { nom: "BOSCAT FUSTA", tones: 275.68, viatges: 11 },
-      { nom: "PRESEGUÉ", tones: 269.36, viatges: 11 },
       { nom: "BAUTISTA", tones: 260.72, viatges: 10 },
-      { nom: "AGBAR", tones: 30.94, viatges: 2 },
-      { nom: "PRESEGUE", tones: 21.92, viatges: 1 }
+      { nom: "AGBAR", tones: 30.94, viatges: 2 }
     ],
     clients: [
       { nom: "TSB", tones: 298.2, viatges: 12 },
@@ -510,6 +521,80 @@ const DATA = {
 };
 //__DATA_END__
 
+// ── Acumulat anual ───────────────────────────────────────────────────────────
+// Es calcula aquí, a partir de DATA, i NO dins del bloc //__DATA_START__:
+// així actualitza_dashboard.ps1 no l'esborra i cada mes nou hi entra tot sol.
+const ANY_RE = /^Any /;
+const round2 = n => Math.round(n * 100) / 100;
+
+function mesosPerAny() {
+  const grups = new Map();                       // "2026" -> ["Gener 2026", ...]
+  for (const k of Object.keys(DATA)) {
+    if (ANY_RE.test(k)) continue;
+    const m = k.match(/(\d{4})\s*$/);
+    if (!m) continue;
+    if (!grups.has(m[1])) grups.set(m[1], []);
+    grups.get(m[1]).push(k);                     // ordre cronològic = ordre de DATA
+  }
+  return grups;
+}
+
+function acumula(mesos, camp) {
+  // Agrupem ignorant majúscules/minúscules, igual que fa el PowerShell dins de
+  // cada mes (les taules hash de PowerShell no distingeixen caixa). Si no, un
+  // «Puiggené» al maig i un «PUIGGENÉ» al juny sortirien com dos transportistes.
+  // Es conserva la primera grafia que apareix, en ordre cronològic.
+  const per = new Map();
+  for (const mk of mesos) {
+    for (const r of (DATA[mk][camp] || [])) {
+      const clau = r.nom.toLocaleLowerCase('ca');
+      const e = per.get(clau) || { nom: r.nom, tones: 0, viatges: 0, mesos: 0 };
+      e.tones += r.tones;
+      e.viatges += (r.viatges || 0);
+      e.mesos += 1;
+      per.set(clau, e);
+    }
+  }
+  return [...per.values()]
+    .map(e => ({ ...e, tones: round2(e.tones) }))
+    .sort((a, b) => b.tones - a.tones);
+}
+
+function construeixAcumulats() {
+  const claus = [];
+  for (const [any, mesos] of mesosPerAny()) {
+    if (mesos.length < 2) continue;              // amb un sol mes no aporta res
+    const proveidors = acumula(mesos, 'proveidors');
+    const clients = acumula(mesos, 'clients');
+    const tones = round2(mesos.reduce((a, k) => a + DATA[k].kpis.tones, 0));
+    const viatges = mesos.reduce((a, k) => a + DATA[k].kpis.viatges, 0);
+    const clau = 'Any ' + any;
+    DATA[clau] = {
+      esAnual: true,
+      kpis: {
+        tones,
+        viatges,
+        mitja: viatges ? round2(tones / viatges) : 0,
+        proveidors: proveidors.length,
+        clients: clients.length
+      },
+      proveidors,
+      clients,
+      transportistes: acumula(mesos, 'transportistes'),
+      estelladores: acumula(mesos, 'estelladores'),
+      mesos: mesos.map(k => ({
+        nom: k.replace(/\s*\d{4}\s*$/, ''),
+        tones: DATA[k].kpis.tones,
+        viatges: DATA[k].kpis.viatges
+      }))
+    };
+    claus.push(clau);
+  }
+  return claus;
+}
+
+const CLAUS_ANUALS = construeixAcumulats();
+
 // ── Chart instances ──────────────────────────────────────────────────────────
 let charts = {};
 
@@ -526,6 +611,18 @@ function fmt(n, dec=2) {
 }
 function pct(part, total) {
   return ((part / total) * 100).toFixed(1) + '%';
+}
+
+// Amb més categories que colors la paleta es repetiria i el donut es faria
+// il·legible: agrupem la cua a «Altres». Les taules segueixen mostrant-ho tot.
+function perAlDonut(files, maxColors) {
+  if (files.length <= maxColors) return files;
+  const cap = files.slice(0, maxColors - 1);
+  const cua = files.slice(maxColors - 1);
+  return cap.concat([{
+    nom: `Altres (${cua.length})`,
+    tones: Math.round(cua.reduce((a, r) => a + r.tones, 0) * 100) / 100
+  }]);
 }
 
 function destroyCharts() {
@@ -571,6 +668,12 @@ function renderMonth(monthKey) {
         <div class="kpi-unit">#</div>
       </div>
     </div>
+
+    ${d.mesos ? `
+    <div class="chart-card is-wide">
+      <h3>Evolució mensual · tones netes</h3>
+      <div class="chart-wrap"><canvas id="chartMesos"></canvas></div>
+    </div>` : ''}
 
     <div class="charts-grid">
       <div class="chart-card">
@@ -648,12 +751,38 @@ function renderMonth(monthKey) {
     </div>
   `;
 
+  // Barres: evolució mensual (només a la pestanya d'acumulat anual)
+  if (d.mesos) {
+    charts.mesos = new Chart(document.getElementById('chartMesos'), {
+      type: 'bar',
+      data: {
+        labels: d.mesos.map(r => r.nom),
+        datasets: [{ data: d.mesos.map(r => r.tones), backgroundColor: '#4a7c59',
+                     borderRadius: 4, maxBarThickness: 64 }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: ctx =>
+            ` ${fmt(ctx.raw)} t · ${d.mesos[ctx.dataIndex].viatges} viatges` } }
+        },
+        scales: {
+          y: { beginAtZero: true, grid: { color: '#ecece4' },
+               ticks: { callback: v => fmt(v, 0) } },
+          x: { grid: { display: false } }
+        }
+      }
+    });
+  }
+
   // Donut: proveïdors
+  const donutProv = perAlDonut(d.proveidors, GREENS.length);
   charts.prov = new Chart(document.getElementById('chartProv'), {
     type: 'doughnut',
     data: {
-      labels: d.proveidors.map(r => r.nom),
-      datasets: [{ data: d.proveidors.map(r => r.tones), backgroundColor: GREENS, borderWidth: 2, borderColor: '#fff' }]
+      labels: donutProv.map(r => r.nom),
+      datasets: [{ data: donutProv.map(r => r.tones), backgroundColor: GREENS, borderWidth: 2, borderColor: '#fff' }]
     },
     options: {
       responsive: true, maintainAspectRatio: false,
@@ -666,11 +795,12 @@ function renderMonth(monthKey) {
   });
 
   // Donut: clients
+  const donutCli = perAlDonut(d.clients, ORANGES.length);
   charts.cli = new Chart(document.getElementById('chartCli'), {
     type: 'doughnut',
     data: {
-      labels: d.clients.map(r => r.nom),
-      datasets: [{ data: d.clients.map(r => r.tones), backgroundColor: ORANGES, borderWidth: 2, borderColor: '#fff' }]
+      labels: donutCli.map(r => r.nom),
+      datasets: [{ data: donutCli.map(r => r.tones), backgroundColor: ORANGES, borderWidth: 2, borderColor: '#fff' }]
     },
     options: {
       responsive: true, maintainAspectRatio: false,
@@ -684,13 +814,14 @@ function renderMonth(monthKey) {
 }
 
 // ── Month tabs ───────────────────────────────────────────────────────────────
-function buildTabs() {
+function buildTabs(inicial) {
   const months = Object.keys(DATA);
   const container = document.getElementById('monthTabs');
   container.innerHTML = '';
-  months.forEach((m, i) => {
+  months.forEach(m => {
     const btn = document.createElement('button');
-    btn.className = 'month-tab' + (i === months.length - 1 ? ' active' : '');
+    btn.className = 'month-tab' + (ANY_RE.test(m) ? ' is-any' : '')
+                                + (m === inicial ? ' active' : '');
     btn.textContent = m;
     btn.onclick = () => {
       document.querySelectorAll('.month-tab').forEach(b => b.classList.remove('active'));
@@ -701,8 +832,10 @@ function buildTabs() {
   });
 }
 
-buildTabs();
-renderMonth(Object.keys(DATA).at(-1));
+// S'obre l'últim MES carregat, no l'acumulat: l'anual queda a l'última pestanya.
+const ULTIM_MES = Object.keys(DATA).filter(k => !ANY_RE.test(k)).at(-1);
+buildTabs(ULTIM_MES);
+renderMonth(ULTIM_MES);
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
